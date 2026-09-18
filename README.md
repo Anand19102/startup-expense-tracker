@@ -24,6 +24,30 @@ Startup Expense Tracker is a robust full-stack financial web application enginee
 
 ---
 
+## 🏗 System Architecture
+
+The application is structured around a clean client-server architecture where the frontend interface communicates asynchronously with the Flask backend API, which in turn performs secure data persistence operations against the normalized MySQL database.
+
+```mermaid
+flowchart TD
+    subgraph Frontend [Frontend UI]
+        HTML[HTML / CSS / JS Dashboard]
+    end
+
+    subgraph Backend [Flask REST API]
+        API[App.py Routes\nCRUD & Form Data Handlers]
+    end
+
+    subgraph Database [MySQL Database]
+        DB[(startup_expenses DB\nExpenseRecord & Relational Tables)]
+    end
+
+    HTML <-->|JSON / Axios / Fetch Requests| API
+    API <-->|mysql-connector-python Queries| DB
+```
+
+---
+
 ## 📊 Database Schema Overview
 
 The application is powered by a normalized relational database (`startup_expenses`) configured with foreign key constraints to maintain strict relational integrity:
