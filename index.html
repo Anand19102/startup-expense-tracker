@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Startup Expense Tracker</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-shadow: 0 10px 40px -10px rgba(0,0,0,0.08);
+            --border-color: #e2e8f0;
+            --text-muted: #64748b;
+        }
+        
+        body { 
+            background-color: var(--bg-color); 
+            font-family: 'Inter', sans-serif; 
+            color: #0f172a;
+        }
+
+        /* Card Styling */
+        .card { 
+            border: 1px solid var(--border-color); 
+            box-shadow: var(--card-shadow); 
+            border-radius: 16px; 
+            background: #ffffff;
+        }
+
+        /* Form Styling (SaaS Look) */
+        .form-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+        .form-control, .form-select {
+            border-color: var(--border-color);
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        /* Primary Button */
+        .btn-primary {
+            background-color: #0f172a;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem;
+            transition: transform 0.1s, background-color 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #1e293b;
+            transform: translateY(-1px);
+        }
+
+        /* Total Burn Stat Card */
+        .stat-card {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-radius: 16px;
+            color: white;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.4);
+        }
+        .burn-amount {
+            background: linear-gradient(to right, #f87171, #f43f5e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Table Styling */
+        .table { margin-bottom: 0; }
+        .table th { 
+            background-color: transparent; 
+            color: var(--text-muted); 
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+        .table td { 
+            vertical-align: middle; 
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0.5rem;
+            font-size: 0.95rem;
+        }
+        .table tbody tr:last-child td { border-bottom: none; }
+        .table tbody tr:hover { background-color: #f8fafc; }
+
+        /* Action Buttons */
+        .btn-icon {
+            padding: 0.4rem 0.6rem;
+            border-radius: 6px;
+            color: var(--text-muted);
+            background: transparent;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .btn-icon:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+            border-color: #e2e8f0;
+        }
+        .btn-icon.delete:hover {
+            background: #fee2e2;
+            color: #ef4444;
+            border-color: #fecaca;
+        }
+    </style>
+</head>
+<body class="py-5">
+
+<div class="container" style="max-width: 1200px;">
+    
+    <div class="d-flex align-items-center mb-5">
+        <div class="bg-dark text-white rounded-3 p-2 me-3 shadow-sm d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+            <i class="bi bi-wallet2 fs-4"></i>
+        </div>
+        <div>
+            <h2 class="mb-0 fw-bold tracking-tight">Startup Expenses Tracker</h2>
+            <p class="text-muted mb-0 small">Internal financial ledger & cash flow tracking</p>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card p-4 h-100">
+                <h5 class="mb-4 fw-bold" id="formTitle"><i class="bi bi-plus-circle me-2 text-primary"></i>Log Transaction</h5>
+                <form id="expenseForm">
+                    <input type="hidden" id="edit_expense_id" value="">
+                    
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Amount (₹)</label>
+                            <input type="number" step="0.01" class="form-control fw-bold text-danger" id="amount" placeholder="0.00" required>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Date</label>
+                            <input type="date" class="form-control" id="date" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Team Member</label>
+                        <select class="form-select" id="member_id" required>
+                            </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Project</label>
+                        <select class="form-select" id="project_id" required>
+                            </select>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Category</label>
+                            <select class="form-select" id="category_id" required>
+                                </select>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Vendor</label>
+                            <select class="form-select" id="vendor_id" required>
+                                </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Description (Optional)</label>
+                        <input type="text" class="form-control" id="description" placeholder="What was this for?">
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="btn btn-primary w-100 fw-bold mt-auto">Save Expense</button>
+                    <button type="button" id="cancelEditBtn" class="btn btn-light w-100 fw-bold mt-2 d-none" onclick="cancelEdit()">Cancel Edit</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            
+            <div class="stat-card p-4 mb-4 d-flex justify-content-between align-items-center">
+                <div>
+                    <p class="mb-1 text-secondary text-uppercase fw-bold" style="font-size: 0.8rem; letter-spacing: 1px;">Total Cash Burn</p>
+                    <h2 class="mb-0 fw-bold burn-amount" id="totalBurn">₹0.00</h2>
+                </div>
+                <div class="bg-white bg-opacity-10 rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                    <i class="bi bi-graph-down-arrow fs-3 text-white opacity-75"></i>
+                </div>
+            </div>
+
+            <div class="card p-4">
+                <div class="table-responsive">
+                    <table class="table table-borderless align-middle">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Founder</th>
+                                <th>Details</th>
+                                <th>Description</th>
+                                <th class="text-end">Amount</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ledgerBody">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'http://127.0.0.1:5000/api';
+
+    // Formatter for Indian Rupees UX
+    const currencyFormatter = new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        minimumFractionDigits: 2
+    });
+
+    async function fetchFormOptions() {
+        try {
+            const response = await fetch(`${API_URL}/form-data`);
+            const data = await response.json();
+
+            // Populate Dropdowns dynamically
+            const populateSelect = (id, options, valueKey, textKey, extraKey = '') => {
+                const select = document.getElementById(id);
+                select.innerHTML = '<option value="" disabled selected>Select option...</option>';
+                options.forEach(opt => {
+                    const extraText = extraKey ? ` (${opt[extraKey]})` : '';
+                    select.innerHTML += `<option value="${opt[valueKey]}">${opt[textKey]}${extraText}</option>`;
+                });
+            };
+
+            populateSelect('member_id', data.members, 'MemberID', 'Name', 'Role');
+            populateSelect('project_id', data.projects, 'ProjectID', 'ProjectName');
+            populateSelect('category_id', data.categories, 'CategoryID', 'CategoryName');
+            populateSelect('vendor_id', data.vendors, 'VendorID', 'VendorName');
+        } catch (error) {
+            console.error("Error fetching form options:", error);
+        }
+    }
+
+    async function fetchLedger() {
+        try {
+            const response = await fetch(`${API_URL}/ledger`);
+            const data = await response.json();
+            
+            const tbody = document.getElementById('ledgerBody');
+            tbody.innerHTML = ''; 
+            let totalBurn = 0; 
+            
+            data.forEach(expense => {
+                totalBurn += parseFloat(expense.Amount);
+                
+                const dateObj = new Date(expense.ExpenseDate);
+                const formattedDate = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                const descriptionText = expense.Description ? expense.Description : '<span class="text-muted opacity-50">-</span>';
+
+                // Format the date properly for the HTML5 date input field (YYYY-MM-DD)
+                const rawDateStr = dateObj.toISOString().split('T')[0];
+                const safeDesc = expense.Description ? expense.Description.replace(/'/g, "\\'") : '';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="text-muted small">${formattedDate}</td>
+                        <td class="fw-semibold">${expense.Founder}</td>
+                        <td>
+                            <div class="d-flex flex-column">
+                                <span class="fw-medium">${expense.ProjectName}</span>
+                                <span class="text-muted" style="font-size: 0.75rem;">${expense.VendorName} • ${expense.CategoryName}</span>
+                            </div>
+                        </td>
+                        <td class="text-muted small">${descriptionText}</td>
+                        <td class="text-end fw-bold text-danger">${currencyFormatter.format(expense.Amount)}</td>
+                        <td class="text-center text-nowrap">
+                            <button onclick="triggerEdit(${expense.ExpenseID}, ${expense.Amount}, '${rawDateStr}', ${expense.MemberID}, ${expense.ProjectID}, ${expense.CategoryID}, ${expense.VendorID}, '${safeDesc}')" class="btn-icon me-1" title="Edit record">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button onclick="deleteExpense(${expense.ExpenseID})" class="btn-icon delete" title="Delete record">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            // Update Total
+            document.getElementById('totalBurn').innerText = currencyFormatter.format(totalBurn);
+
+        } catch (error) {
+            console.error("Error fetching ledger:", error);
+        }
+    }
+
+    // --- NEW: Fill form with existing data when Edit is clicked ---
+    function triggerEdit(id, amount, dateStr, memberId, projectId, categoryId, vendorId, desc) {
+        document.getElementById('edit_expense_id').value = id;
+        document.getElementById('amount').value = amount;
+        document.getElementById('date').value = dateStr;
+        document.getElementById('member_id').value = memberId;
+        document.getElementById('project_id').value = projectId;
+        document.getElementById('category_id').value = categoryId;
+        document.getElementById('vendor_id').value = vendorId;
+        document.getElementById('description').value = desc;
+
+        // Change UI to Edit Mode
+        document.getElementById('formTitle').innerHTML = '<i class="bi bi-pencil-square me-2 text-warning"></i>Edit Transaction';
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.innerText = 'Update Expense';
+        submitBtn.classList.replace('btn-primary', 'btn-warning');
+        submitBtn.classList.replace('text-white', 'text-dark');
+        document.getElementById('cancelEditBtn').classList.remove('d-none');
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // --- NEW: Reset the form back to Create mode ---
+    function cancelEdit() {
+        document.getElementById('expenseForm').reset();
+        document.getElementById('edit_expense_id').value = '';
+        
+        // Restore UI
+        document.getElementById('formTitle').innerHTML = '<i class="bi bi-plus-circle me-2 text-primary"></i>Log Transaction';
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.innerText = 'Save Expense';
+        submitBtn.classList.replace('btn-warning', 'btn-primary');
+        submitBtn.classList.replace('text-dark', 'text-white');
+        document.getElementById('cancelEditBtn').classList.add('d-none');
+    }
+
+    // --- UPDATED: Handle both Add and Update ---
+    document.getElementById('expenseForm').addEventListener('submit', async function(e) {
+        e.preventDefault(); 
+        
+        const expenseData = {
+            amount: document.getElementById('amount').value,
+            date: document.getElementById('date').value,
+            member_id: document.getElementById('member_id').value,
+            project_id: document.getElementById('project_id').value,
+            category_id: document.getElementById('category_id').value,
+            vendor_id: document.getElementById('vendor_id').value,
+            description: document.getElementById('description').value 
+        };
+
+        const editId = document.getElementById('edit_expense_id').value;
+        const fetchMethod = editId ? 'PUT' : 'POST';
+        const fetchUrl = editId ? `${API_URL}/update-expense/${editId}` : `${API_URL}/add-expense`;
+
+        try {
+            await fetch(fetchUrl, {
+                method: fetchMethod,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(expenseData)
+            });
+            
+            cancelEdit(); 
+            fetchLedger();
+        } catch (error) {
+            console.error("Error saving expense:", error);
+        }
+    });
+
+    async function deleteExpense(id) {
+        if(confirm("Are you sure you want to permanently delete this expense record?")) {
+            try {
+                await fetch(`${API_URL}/delete-expense/${id}`, { method: 'DELETE' });
+                fetchLedger(); 
+            } catch (error) {
+                console.error("Error deleting expense:", error);
+            }
+        }
+    }
+
+    // Initialize the page
+    fetchFormOptions();
+    fetchLedger();
+</script>
+</body>
+</html>
